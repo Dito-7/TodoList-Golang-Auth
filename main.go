@@ -73,9 +73,13 @@ func main() {
 	userUsecase := usecase.NewUserUsecase(userRepo)
 	userHandler := delivery.NewUserHandler(userUsecase)
 
+	todoRepo := mongodb.NewTodoRepository(database)
+	todoUsecase := usecase.NewTodoUsecase(todoRepo)
+	todoHandler := delivery.NewTodoHandler(todoUsecase)
+
 	// Setup Router
 	r := chi.NewRouter()
-	routes.SetupUserRoutes(r, userHandler)
+	routes.SetupUserRoutes(r, userHandler, todoHandler)
 
 	// Jalankan Server
 	port := ":4444"
