@@ -5,6 +5,7 @@ import (
 	"TodoList-Golang-Auth/repository"
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -28,4 +29,14 @@ func (r *userRepositoryImpl) CreateUser(ctx context.Context, user *models.User) 
 	}
 
 	return user, nil
+}
+
+func (r *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user models.User
+	filter := bson.M{"email": email}
+	err := r.collection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

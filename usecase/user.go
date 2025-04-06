@@ -5,6 +5,7 @@ import (
 	"TodoList-Golang-Auth/repository"
 	"TodoList-Golang-Auth/utils"
 	"context"
+	"errors"
 )
 
 type userUsecaseImpl struct {
@@ -27,4 +28,17 @@ func (u *userUsecaseImpl) RegisterUser(ctx context.Context, email, password stri
 	}
 
 	return u.userRepo.CreateUser(ctx, user)
+}
+
+func (u *userUsecaseImpl) LoginUser(ctx context.Context, email, password string) (*models.User, error) {
+	user, err := u.userRepo.FindByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+
+	if !utils.CheckPassword(user.Password, password) {
+		return nil, errors.New("invalid credentials")
+	}
+
+	return user, nil
 }
