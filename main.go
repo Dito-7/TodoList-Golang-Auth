@@ -18,7 +18,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Fungsi init() untuk memuat .env sebelum inisialisasi lain
 func init() {
 	if err := godotenv.Load(".env"); err != nil {
 		slog.Warn(".env file not found, using default environment variables")
@@ -27,7 +26,6 @@ func init() {
 	}
 }
 
-// Fungsi untuk menghubungkan ke MongoDB
 func mongoConnection() (*mongo.Client, error) {
 	mongoURI, ok := os.LookupEnv("MONGO_URI")
 	if !ok {
@@ -42,7 +40,6 @@ func mongoConnection() (*mongo.Client, error) {
 		return nil, fmt.Errorf("gagal terhubung ke MongoDB: %v", err)
 	}
 
-	// Ping ke database untuk memastikan koneksi
 	dbName := os.Getenv("MONGO_DBNAME")
 	if err := client.Database(dbName).RunCommand(context.TODO(), bson.D{{"ping", 1}}).Err(); err != nil {
 		return nil, fmt.Errorf("gagal ping MongoDB: %v", err)
@@ -53,7 +50,6 @@ func mongoConnection() (*mongo.Client, error) {
 }
 
 func main() {
-	// Koneksi ke MongoDB
 	dbClient, err := mongoConnection()
 	if err != nil {
 		slog.Error("Error koneksi MongoDB", "error", err)
@@ -65,10 +61,8 @@ func main() {
 		}
 	}()
 
-	// Ambil database yang benar
 	database := dbClient.Database(os.Getenv("MONGO_DBNAME"))
 
-	// Setup Repository & Usecase
 	userRepo := mongodb.NewUserRepository(database)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 	userHandler := delivery.NewUserHandler(userUsecase)
@@ -77,11 +71,9 @@ func main() {
 	todoUsecase := usecase.NewTodoUsecase(todoRepo)
 	todoHandler := delivery.NewTodoHandler(todoUsecase)
 
-	// Setup Router
 	r := chi.NewRouter()
 	routes.SetupUserRoutes(r, userHandler, todoHandler)
 
-	// Jalankan Server
 	port := ":4444"
 	slog.Info("Server started", "port", port)
 	if err := http.ListenAndServe(port, r); err != nil {
