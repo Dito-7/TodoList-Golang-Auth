@@ -2,15 +2,18 @@ package delivery
 
 import (
 	"TodoList-Golang-Auth/middleware"
+	"TodoList-Golang-Auth/repository"
 	"TodoList-Golang-Auth/usecase"
 	"TodoList-Golang-Auth/utils"
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 type UserHandler struct {
-	userUsecase usecase.UserUsecase
+	userUsecase   usecase.UserUsecase
+	blacklistRepo repository.BlacklistRepository
 }
 
 type AuthRequest struct {
@@ -18,8 +21,11 @@ type AuthRequest struct {
 	Password string `json:"password"`
 }
 
-func NewUserHandler(userUsecase usecase.UserUsecase) *UserHandler {
-	return &UserHandler{userUsecase: userUsecase}
+func NewUserHandler(userUsecase usecase.UserUsecase, blacklistRepo repository.BlacklistRepository) *UserHandler {
+	return &UserHandler{
+		userUsecase:   userUsecase,
+		blacklistRepo: blacklistRepo,
+	}
 }
 
 func (h *UserHandler) Profile(w http.ResponseWriter, r *http.Request) {
@@ -77,10 +83,38 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"message": "Login successful",
-		"user": map[string]interface{}{
-			"id":    user.ID.Hex(),
-			"email": user.Email,
-		},
-		"token": token,
+		"token":   token,
+	})
+}
+
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	parts := strings.Split(authHeader, " ")
+	if len(parts) != 2 || parts[0] != "Bearer" {
+		http.Error(w, "Invalid Authorization header", http.StatusUnauthorized)
+		return
+	}
+
+	tokenString := parts[1]
+
+	claims, err := utils.ValidateToken(tokenString)
+	if err != nil {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	err = h.blacklistRepo.AddToken(r.Context(), tokenString, claims.ExpiresAt.Time)
+	if err != nil {
+		http.Error(w, "Failed to logout", http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Logout successful",
 	})
 }

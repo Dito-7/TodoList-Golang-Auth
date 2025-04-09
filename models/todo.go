@@ -7,5 +7,5 @@ type Todo struct {
 	Title       string             `bson:"title,omitempty" json:"title,omitempty"`
 	Completed   bool               `bson:"completed,omitempty" json:"completed,omitempty"`
 	Description string             `bson:"description,omitempty" json:"description,omitempty"`
-	UserID      primitive.ObjectID `bson:"user_id,omitempty" json:"user_id,omitempty"`
+	UserID      primitive.ObjectID `bson:"userId,omitempty" json:"userId,omitempty"`
 }

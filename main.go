@@ -63,16 +63,18 @@ func main() {
 
 	database := dbClient.Database(os.Getenv("MONGO_DBNAME"))
 
+	blacklistRepo := mongodb.NewBlacklistRepository(database)
+
 	userRepo := mongodb.NewUserRepository(database)
 	userUsecase := usecase.NewUserUsecase(userRepo)
-	userHandler := delivery.NewUserHandler(userUsecase)
+	userHandler := delivery.NewUserHandler(userUsecase, blacklistRepo)
 
 	todoRepo := mongodb.NewTodoRepository(database)
 	todoUsecase := usecase.NewTodoUsecase(todoRepo)
 	todoHandler := delivery.NewTodoHandler(todoUsecase)
 
 	r := chi.NewRouter()
-	routes.SetupUserRoutes(r, userHandler, todoHandler)
+	routes.SetupUserRoutes(r, userHandler, todoHandler, blacklistRepo)
 
 	port := ":4444"
 	slog.Info("Server started", "port", port)
