@@ -15,7 +15,6 @@ type JWTClaim struct {
 	jwt.RegisteredClaims
 }
 
-// GenerateJWT membuat token dengan masa aktif 24 jam
 func GenerateJWT(email string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 

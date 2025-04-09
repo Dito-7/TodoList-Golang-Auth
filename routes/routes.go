@@ -10,10 +10,8 @@ import (
 )
 
 func SetupUserRoutes(r chi.Router, userHandler *delivery.UserHandler, todoHandler *delivery.TodoHandler, blacklistRepo repository.BlacklistRepository) {
-	r.Route("/api/users", func(r chi.Router) {
-		r.Post("/register", userHandler.RegisterUser)
-		r.Post("/login", userHandler.Login)
-	})
+	r.Post("/register", userHandler.RegisterUser)
+	r.Post("/login", userHandler.Login)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to Go-Chi API"))
