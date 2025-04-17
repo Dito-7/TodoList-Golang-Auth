@@ -1,35 +1,38 @@
 package delivery
 
 import (
-	"TodoList-Golang-Auth/middleware"
+	"TodoList-Golang-Auth/models"
 	"TodoList-Golang-Auth/repository"
-	"TodoList-Golang-Auth/usecase"
 	"TodoList-Golang-Auth/utils"
 	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type UserHandler struct {
-	userUsecase   usecase.UserUsecase
+	userUsecase   models.UserUsecase
 	blacklistRepo repository.BlacklistRepository
+	validator     *validator.Validate
 }
 
 type AuthRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
 }
 
-func NewUserHandler(userUsecase usecase.UserUsecase, blacklistRepo repository.BlacklistRepository) *UserHandler {
+func NewUserHandler(userUsecase models.UserUsecase, blacklistRepo repository.BlacklistRepository) *UserHandler {
 	return &UserHandler{
 		userUsecase:   userUsecase,
 		blacklistRepo: blacklistRepo,
+		validator:     validator.New(),
 	}
 }
 
 func (h *UserHandler) Profile(w http.ResponseWriter, r *http.Request) {
-	email, ok := middleware.GetUserEmailFromContext(r.Context())
+	email, ok := utils.GetUserEmailFromContext(r.Context())
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -42,12 +45,17 @@ func (h *UserHandler) Profile(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required,min=6"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		http.Error(w, "Validation error: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -63,20 +71,27 @@ func (h *UserHandler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req AuthRequest
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(req); err != nil {
+		http.Error(w, "Validation error: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	user, err := h.userUsecase.LoginUser(r.Context(), req.Email, req.Password)
 	if err != nil {
-		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 
 	token, err := utils.GenerateJWT(user.Email)
 	if err != nil {
-		http.Error(w, "failed to generate token", http.StatusInternalServerError)
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 		return
 	}
 

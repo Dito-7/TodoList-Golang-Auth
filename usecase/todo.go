@@ -2,15 +2,14 @@ package usecase
 
 import (
 	"TodoList-Golang-Auth/models"
-	"TodoList-Golang-Auth/repository"
 	"context"
 )
 
 type todoUsecaseImpl struct {
-	todoRepo repository.TodoRepository
+	todoRepo models.TodoRepository
 }
 
-func NewTodoUsecase(todoRepo repository.TodoRepository) TodoUsecase {
+func NewTodoUsecase(todoRepo models.TodoRepository) models.TodoUsecase {
 	return &todoUsecaseImpl{todoRepo: todoRepo}
 }
 

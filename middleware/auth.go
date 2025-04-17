@@ -3,14 +3,9 @@ package middleware
 import (
 	"TodoList-Golang-Auth/repository"
 	"TodoList-Golang-Auth/utils"
-	"context"
 	"net/http"
 	"strings"
 )
-
-type contextKey string
-
-const userEmailKey contextKey = "userEmail"
 
 func JWTAuthMiddleware(blacklistRepo repository.BlacklistRepository) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
@@ -45,13 +40,8 @@ func JWTAuthMiddleware(blacklistRepo repository.BlacklistRepository) func(http.H
 				return
 			}
 
-			ctx := context.WithValue(r.Context(), userEmailKey, claims.Email)
+			ctx := utils.SetUserEmailToContext(r.Context(), claims.Email)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
-}
-
-func GetUserEmailFromContext(ctx context.Context) (string, bool) {
-	email, ok := ctx.Value(userEmailKey).(string)
-	return email, ok
 }

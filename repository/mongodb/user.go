@@ -2,7 +2,6 @@ package mongodb
 
 import (
 	"TodoList-Golang-Auth/models"
-	"TodoList-Golang-Auth/repository"
 	"context"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,7 +13,7 @@ type userRepositoryImpl struct {
 	collection *mongo.Collection
 }
 
-func NewUserRepository(db *mongo.Database) repository.UserRepository {
+func NewUserRepository(db *mongo.Database) models.UserRepository {
 	return &userRepositoryImpl{
 		collection: db.Collection("users"),
 	}

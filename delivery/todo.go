@@ -1,7 +1,7 @@
 package delivery
 
 import (
-	"TodoList-Golang-Auth/usecase"
+	"TodoList-Golang-Auth/models"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -9,10 +9,10 @@ import (
 )
 
 type TodoHandler struct {
-	todoUsecase usecase.TodoUsecase
+	todoUsecase models.TodoUsecase
 }
 
-func NewTodoHandler(todoUsecase usecase.TodoUsecase) *TodoHandler {
+func NewTodoHandler(todoUsecase models.TodoUsecase) *TodoHandler {
 	return &TodoHandler{
 		todoUsecase: todoUsecase,
 	}
