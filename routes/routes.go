@@ -3,13 +3,13 @@ package routes
 import (
 	"TodoList-Golang-Auth/delivery"
 	"TodoList-Golang-Auth/middleware"
-	"TodoList-Golang-Auth/repository"
+	"TodoList-Golang-Auth/models"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
 
-func SetupUserRoutes(r chi.Router, userHandler *delivery.UserHandler, todoHandler *delivery.TodoHandler, blacklistRepo repository.BlacklistRepository) {
+func SetupUserRoutes(r chi.Router, userHandler *delivery.UserHandler, todoHandler *delivery.TodoHandler, blacklistRepo models.BlacklistRepository) {
 	r.Post("/register", userHandler.RegisterUser)
 	r.Post("/login", userHandler.Login)
 

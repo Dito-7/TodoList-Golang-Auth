@@ -2,7 +2,6 @@ package delivery
 
 import (
 	"TodoList-Golang-Auth/models"
-	"TodoList-Golang-Auth/repository"
 	"TodoList-Golang-Auth/utils"
 	"context"
 	"encoding/json"
@@ -14,7 +13,7 @@ import (
 
 type UserHandler struct {
 	userUsecase   models.UserUsecase
-	blacklistRepo repository.BlacklistRepository
+	blacklistRepo models.BlacklistRepository
 	validator     *validator.Validate
 }
 
@@ -23,7 +22,7 @@ type AuthRequest struct {
 	Password string `json:"password" validate:"required"`
 }
 
-func NewUserHandler(userUsecase models.UserUsecase, blacklistRepo repository.BlacklistRepository) *UserHandler {
+func NewUserHandler(userUsecase models.UserUsecase, blacklistRepo models.BlacklistRepository) *UserHandler {
 	return &UserHandler{
 		userUsecase:   userUsecase,
 		blacklistRepo: blacklistRepo,

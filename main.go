@@ -65,6 +65,11 @@ func main() {
 
 	blacklistRepo := mongodb.NewBlacklistRepository(database)
 
+	if err := blacklistRepo.EnsureTTLIndex(context.TODO()); err != nil {
+		slog.Error("Gagal membuat TTL index untuk blacklist tokens", "error", err)
+		os.Exit(1)
+	}
+
 	userRepo := mongodb.NewUserRepository(database)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 	userHandler := delivery.NewUserHandler(userUsecase, blacklistRepo)

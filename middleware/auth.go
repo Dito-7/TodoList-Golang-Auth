@@ -1,13 +1,13 @@
 package middleware
 
 import (
-	"TodoList-Golang-Auth/repository"
+	"TodoList-Golang-Auth/models"
 	"TodoList-Golang-Auth/utils"
 	"net/http"
 	"strings"
 )
 
-func JWTAuthMiddleware(blacklistRepo repository.BlacklistRepository) func(http.Handler) http.Handler {
+func JWTAuthMiddleware(blacklistRepo models.BlacklistRepository) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
